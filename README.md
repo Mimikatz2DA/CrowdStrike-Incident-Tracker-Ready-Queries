@@ -15,6 +15,9 @@ This repository contains queries (primarily KQL and similar languages) that extr
 |------|------|
 | Microsoft Defender for Endpoint (KQL) | [Microsoft-Defender-for-Endpoint.md](https://github.com/Mimikatz2DA/CrowdStrike-Incident-Tracker-Ready-Queries/blob/main/Microsoft-Defender-for-Endpoint.md) |
 | CrowdStrike Falcon (CQL) | Pending Creation |
+| Windows Event Logs (PowerShell / Parsing) | Pending Creation |
+| HTTP Access Logs (Parsing) | Pending Creation |
+
 ## Roadmap
 
 New queries are being added regularly across additional platforms and data sources. Planned additions include more Microsoft Defender tables, CrowdStrike Falcon, endpoint-based collection queries, and log file/directory parsers that produce Tracker-ready output.
