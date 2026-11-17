@@ -88,10 +88,93 @@ DeviceProcessEvents
     // Account associated with the process execution
     OwnerAccount = AccountName,
     // Placeholder for analyst observations
-    Notes = ""```
+    Notes = ""
+```
 
 ## DeviceEvents
 
 ## DeviceFileEvents
 
-## DeviceNetworkEvents
+## DeviceNetworkEvents - URL First
+```
+// Define available time options
+let LookBack = 1d;
+let StartTime = datetime(2026-08-01);
+let EndTime = datetime(2026-08-03);
+// Define tracker and investigation values
+let SubmittedByValue = "<Analyst Name>";
+let ComputerNameValue = "<DeviceName>";
+let UserName = "<AccountName>";
+// Define strings to search for
+let SearchTerms = dynamic([
+    "microsoft",
+    "google"
+]);
+// Search Microsoft Defender network connection telemetry
+DeviceNetworkEvents
+// Relative time option
+| where Timestamp >= ago(LookBack)
+// Alternate fixed time option
+// Comment out the relative time filter above and uncomment this line when needed
+// | where Timestamp between (StartTime .. EndTime)
+// Limit results to activity associated with the specified account
+| where InitiatingProcessAccountName has UserName
+// Limit results to activity associated with the specified system
+| where DeviceName has ComputerNameValue
+// Search network destination and initiating process context for any value in SearchTerms
+| where RemoteUrl has_any (SearchTerms)
+    or RemoteIP has_any (SearchTerms)
+    or InitiatingProcessCommandLine has_any (SearchTerms)
+    or InitiatingProcessFileName has_any (SearchTerms)
+// Sort using the native Timestamp before project removes the field
+// This ensures the newest network activity appears first
+| order by Timestamp desc
+// Format results using the tracker column names and order
+| project
+    // Analyst submitting or documenting the evidence
+    SubmittedBy = SubmittedByValue,
+    // Date this evidence record was added in MM/DD/YYYY format
+    DateAdded = format_datetime(now(), "MM/dd/yyyy"),
+    // Initial review or workflow status
+    StatusTag = "Under Investigation",
+    // Endpoint where the network activity occurred
+    SystemName = DeviceName,
+    // UTC event timestamp including hours, minutes, and seconds
+    // Example: 2026-11-16T19:45:32Z
+    DateTimeUTC = strcat(
+        format_datetime(Timestamp, "yyyy-MM-dd"),
+        "T",
+        format_datetime(Timestamp, "HH"),
+        ":",
+        format_datetime(Timestamp, "mm"),
+        ":",
+        format_datetime(Timestamp, "ss"),
+        "Z"
+    ),
+    // Identifies the telemetry or event type
+    TimestampType = "Network Connection",
+    // Consolidate key network context into a single Activity field with URL first
+    Activity = strcat(
+        "URL: ", RemoteUrl, " | ",
+        "RemoteIP: ", RemoteIP, ":", tostring(RemotePort), " | ",
+        "LocalIP: ", LocalIP, ":", tostring(LocalPort), " | ",
+        "Protocol: ", Protocol, " | ",
+        "Process: ", InitiatingProcessFileName, " (", InitiatingProcessCommandLine, ") | ",
+        "User: ", InitiatingProcessAccountName, " | ",
+        "PID: ", tostring(InitiatingProcessId)
+    ),
+    // Defender table providing the evidence
+    EvidenceSource = "MDE - DeviceNetworkEvents",
+    // Additional evidence details
+    DetailsComments = "",
+    // Placeholder for ATT&CK technique or sub-technique
+    ATTCKAlignment = "",
+    // Placeholder for file size
+    SizeBytes = "",
+    // SHA256 of the initiating process when available
+    Hash = InitiatingProcessSHA256,
+    // Account associated with the initiating process
+    OwnerAccount = InitiatingProcessAccountName,
+    // Placeholder for analyst observations
+    Notes = ""
+```
