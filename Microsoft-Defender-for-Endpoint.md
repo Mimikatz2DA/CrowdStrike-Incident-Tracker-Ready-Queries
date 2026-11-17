@@ -96,7 +96,7 @@ DeviceProcessEvents
 ## DeviceFileEvents
 
 ## DeviceNetworkEvents - URL First
-```
+```kql
 // Define available time options
 let LookBack = 1d;
 let StartTime = datetime(2026-08-01);
